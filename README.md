@@ -47,6 +47,7 @@ new Custom Roms
 
 #Servers will reflash
 
+[![mIRC](https://img.shields.io/badge/mIRC-IRC_Client-00599C?style=flat-square&logo=internet-explorer&logoColor=white)](https://www.mirc.com/)
 
 
 -------------
