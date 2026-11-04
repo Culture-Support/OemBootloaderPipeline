@@ -47,12 +47,17 @@ new Custom Roms
 
 #Servers will reflash
 
-[![mIRC](https://img.shields.io/badge/mIRC-IRC_Client-00599C?style=flat-square&logo=internet-explorer&logoColor=white)](https://www.mirc.com/)
-
 
 -------------
 
-We trasncripts our Self on Mirc channel 
+We Shelters on Mirc channel 
 
-- turning devices back to super hosts the way it should
-- not need new Phone hysteria 
+# Flash Contact Channel on Mirc
+
+
+[![mIRC](https://img.shields.io/badge/mIRC-IRC_Client-00599C?style=flat-square&logo=internet-explorer&logoColor=white)](https://www.mirc.com/)
+
+
+[![mIRC Classic](https://img.shields.io/badge/mIRC-v7.x_%7C_Chat-336699?style=for-the-badge&logo=irc&logoColor=white)](https://www.mirc.com/)
+
+
