@@ -55,7 +55,9 @@
 
 
 
-
+# Focusing Build Open Bootloaders
+# Repair Tool
+- Adb Flash Pipeline 
 
 ------------
 ----------
