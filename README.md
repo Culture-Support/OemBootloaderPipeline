@@ -88,17 +88,6 @@ We Shelters on Mirc channel
 
 
 
-[![LineageOS](https://img.shields.io/badge/LineageOS-Official-167C80?style=for-the-badge&logo=lineageos&logoColor=white)](https://lineageos.org/)
-
-
-
-
-[![Paranoid Android](https://img.shields.io/badge/Paranoid_Android-Topaz%2FUvite-00BCD4?style=for-the-badge&logo=android&logoColor=white)](https://paranoidandroid.co/)
-
-
-
-[![SELinux](https://img.shields.io/badge/SELinux-Enforcing-success?style=flat-square&logo=shield&logoColor=white)](https://xdaforums.com/)
-
 
 
 
@@ -126,6 +115,21 @@ We Shelters on Mirc channel
 --------------
 --------
 ----------------
+
+[![LineageOS](https://img.shields.io/badge/LineageOS-Official-167C80?style=for-the-badge&logo=lineageos&logoColor=white)](https://lineageos.org/)
+
+
+
+
+[![Paranoid Android](https://img.shields.io/badge/Paranoid_Android-Topaz%2FUvite-00BCD4?style=for-the-badge&logo=android&logoColor=white)](https://paranoidandroid.co/)
+
+
+
+[![SELinux](https://img.shields.io/badge/SELinux-Enforcing-success?style=flat-square&logo=shield&logoColor=white)](https://xdaforums.com/)
+
+
+
+
 
 --------
 --------
