@@ -66,3 +66,67 @@ We Shelters on Mirc channel
 
 
 [![Flash Android Version](https://img.shields.io/badge/Flash_11.1-Android_2.2--4.0.x-E1122A?style=flat&logo=android&logoColor=white)](https://archive.org/details/adobe-flash-player-android)
+
+
+
+[![Custom ROM](https://img.shields.io/badge/Android-Custom_ROM-7B1FA2?style=for-the-badge&logo=android&logoColor=white&labelColor=3DDC84)](https://xdaforums.com/)
+
+
+
+[![XDA Thread](https://img.shields.io/badge/XDA-Thread_Active-F59714?style=flat-square&logo=xda-developers&logoColor=white)](https://xdaforums.com/)
+
+
+
+[![LineageOS](https://img.shields.io/badge/LineageOS-Official-167C80?style=for-the-badge&logo=lineageos&logoColor=white)](https://lineageos.org/)
+
+
+
+
+[![Paranoid Android](https://img.shields.io/badge/Paranoid_Android-Topaz%2FUvite-00BCD4?style=for-the-badge&logo=android&logoColor=white)](https://paranoidandroid.co/)
+
+
+
+[![SELinux](https://img.shields.io/badge/SELinux-Enforcing-success?style=flat-square&logo=shield&logoColor=white)](https://xdaforums.com/)
+
+
+
+
+--------------
+--------------
+--------
+----------------
+
+--------
+--------
+
+
+[![Build Status](https://img.shields.io/badge/Build-Official-4caf50?style=flat&logo=android&logoColor=white)](https://xdaforums.com/)
+
+
+
+
+[![Build Status](https://img.shields.io/badge/Build-Unofficial-ff9800?style=flat&logo=android&logoColor=white)](https://xdaforums.com/)
+
+
+
+
+-------------
+--------------
+--------
+----------------
+
+--------
+--------
+-------------
+--------------
+--------
+----------------
+
+--------
+--------
+
+
+
+
+
+
