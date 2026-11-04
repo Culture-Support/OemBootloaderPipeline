@@ -65,10 +65,4 @@ We Shelters on Mirc channel
 
 
 
-[![Flash Android](https://img.shields.io/badge/Flash_Player-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white&labelColor=FF0000)](https://archive.org/details/adobe-flash-player-android)
-
-
-
-
-
 [![Flash Android Version](https://img.shields.io/badge/Flash_11.1-Android_2.2--4.0.x-E1122A?style=flat&logo=android&logoColor=white)](https://archive.org/details/adobe-flash-player-android)
