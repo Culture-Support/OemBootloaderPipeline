@@ -24,3 +24,25 @@ Bootloader Update
 
   -----
   Any Mobile Custom Room Pipeline Flash Tool
+
+
+
+---------
+
+# The Big Christmas Party Comming
+
+- We also Bug Repair in December Release
+- Enable instert Phone Usb and Flash
+- Build Firmware Rebuilt Env Custom Rom
+
+###########
+########
+######
+###
+
+the big simulator botload and sideload 
+new Custom Roms
+
+-----
+
+#Servers will reflash
