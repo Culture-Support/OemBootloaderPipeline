@@ -794,4 +794,52 @@ Lagre koden som ``` index.html ``` og åpne den i en Chromium-basert nettleser (
 
 
 
+----------
+-----------
 
+En responsiv, nettleserbasert applikasjon designet for flashing av partisjonsfiler (`.img` / `.bin`) direkte til Android-enheter via WebUSB og Fastboot.
+
+## Funksjoner og spesifikasjoner
+
+* **Partisjonshåndtering:** Rask velger for standard dynamiske og A/B-partisjoner (`boot`, `init_boot`, `recovery`, `vendor_boot`, `system`, `vbmeta`) samt støtte for egendefinerte partisjonsnavn.
+* **A/B Slot-støtte:** Lar deg eksplisitt flashe til `_a`, `_b` eller aktiv slot (`fastboot flash boot_a file.img`).
+* **WebUSB Fastboot:** Benytter WebUSB API-filter (`classCode: 0xff`, `subclassCode: 0x42`, `protocolCode: 0x03`) for å kommunisere direkte med Fastboot-grensesnittet over USB i kompatible nettlesere.
+* **Mobil/Touch-optimalisert:** Bygget med `100dvh` for å unngå layoutforskyvning ved skjulte adressefelt, `env(safe-area-inset)`, touch-flater på minst 46px og et Mint-Y/Cinnamon-inspirert mørkt tema.
+* **CLI-generator:** Genererer og kopierer automatisk tilsvarende `fastboot`-kommando for manuell kjøring i terminalen.
+
+## Krav
+
+* Chromium-basert nettleser med WebUSB-støtte (Chrome, Brave, Edge, Opera).
+* Android-enhet satt i Fastboot Mode (Bootloader).
+* USB-kabel med OTG-støtte dersom flashing utføres fra mobiltelefon.
+* Webapplikasjonen må kjøres over `https://` eller `http://localhost` på grunn av WebUSB-sikkerhetskrav.
+
+## Bruk
+
+1. Åpne `index.html` i en støttet nettleser.
+2. Sett Android-enheten i Fastboot-modus (hold normalt inne **Volum Ned + Strøm** under oppstart).
+3. Trykk på **Koble til Fastboot (WebUSB)** og velg enheten fra dialogboksen.
+4. Velg målpartisjon (`boot`, `init_boot`, etc.) og eventuell slot-konfigurasjon.
+5. Last opp ønsket `.img`- eller `.bin`-fil.
+6. Trykk **Flash Partisjon** for å overføre bildet, eller bruk **Kopier CLI** for å kjøre kommandoen manuelt via Android SDK Platform-Tools.
+
+
+
+
+
+------------------------
+-------------------------
+
+####
+#####&######
+#######$&######$
+---------------------------
+-------------------------
+
+
+#######$&######$
+#####&######
+#####
+
+-------------------------
+-------------------------
