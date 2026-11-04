@@ -61,3 +61,15 @@ We Shelters on Mirc channel
 [![mIRC Classic](https://img.shields.io/badge/mIRC-v7.x_%7C_Chat-336699?style=for-the-badge&logo=irc&logoColor=white)](https://www.mirc.com/)
 
 
+[![Flash OEM](https://img.shields.io/badge/Flash-OEM_Edition-FF3300?style=flat-square&logo=adobe-flash-player&logoColor=white)](https://en.wikipedia.org/wiki/Adobe_Flash_Player)
+
+
+
+[![Flash Android](https://img.shields.io/badge/Flash_Player-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white&labelColor=FF0000)](https://archive.org/details/adobe-flash-player-android)
+
+
+[![Flash Android Legacy](https://img.shields.io/badge/Adobe_Flash-Android_Certified-3DDC84?style=plastic&logo=adobe&logoColor=white&labelColor=D32F2F)](https://archive.org/details/adobe-flash-player-android)
+
+
+
+[![Flash Android Version](https://img.shields.io/badge/Flash_11.1-Android_2.2--4.0.x-E1122A?style=flat&logo=android&logoColor=white)](https://archive.org/details/adobe-flash-player-android)
