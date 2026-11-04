@@ -227,3 +227,10 @@ Make android flash gui partition img
 
 
 
+
+Her er en fullstendig, mobilvennlig enkeltfil-webapp (Flash GUI Partition Tool) bygget for å flashe partisjonsbilder ``` (boot.img, recovery.img, system.img, vendor.img, init_boot.img) ```
+
+til Android-enheter via WebUSB (Fastboot) og ADB over WebUSB.
+Den er stylet med et mørkt Mint/Cinnamon-inspirert tema med mintgrønne aksenter, 44px+ touch-targets, 100dvh layout, fullskjerm-status og innebygd generator for fastboot-kommandoer for manuell kjøring.
+Lagre koden som index.html og åpne den i en Chromium-basert nettleser (Chrome, Brave, Edge på PC eller Android med OTG-kabel) over ``` http://localhost ``` eller ``` https://: ```
+
