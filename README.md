@@ -768,3 +768,30 @@ Lagre koden som ``` index.html ``` og åpne den i en Chromium-basert nettleser (
 -------------------------
 -------------------------
 
+# Android Flash GUI – Partition Flasher
+
+[![Custom ROM](https://img.shields.io/badge/Android-Custom_ROM-7B1FA2?style=for-the-badge&logo=android&logoColor=white&labelColor=3DDC84)](https://xdaforums.com/)
+[![WebUSB](https://img.shields.io/badge/Interface-WebUSB%20Fastboot-87cf3e?style=for-the-badge&logo=googlechrome&logoColor=black)](https://wicg.github.io/webusb/)
+[![Build Status](https://img.shields.io/badge/Build-Official-4caf50?style=flat-square&logo=android&logoColor=white)](https://xdaforums.com/)
+[![SELinux](https://img.shields.io/badge/SELinux-Enforcing-success?style=flat-square&logo=shield&logoColor=white)](https://xdaforums.com/)
+
+```
+      __   __
+      \ \ / /
+       \ V /
+     .-'   '-.
+    /  O   O  \
+   |           |
+   '-----------'
+   .-----------.
+  /|           |\
+ ( |           | )
+  \|           |/
+   '-----------'
+     | |   | |
+     '-'   '-'
+```
+
+
+
+
