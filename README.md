@@ -81,7 +81,6 @@ We Shelters on Mirc channel
 
 
 
-[![Custom ROM](https://img.shields.io/badge/Android-Custom_ROM-7B1FA2?style=for-the-badge&logo=android&logoColor=white&labelColor=3DDC84)](https://xdaforums.com/)
 
 
 
@@ -115,6 +114,7 @@ We Shelters on Mirc channel
 [![Build Status](https://img.shields.io/badge/Build-Official-4caf50?style=flat&logo=android&logoColor=white)](https://xdaforums.com/)
 
 
+[![Custom ROM](https://img.shields.io/badge/Android-Custom_ROM-7B1FA2?style=for-the-badge&logo=android&logoColor=white&labelColor=3DDC84)](https://xdaforums.com/)
 
 
 [![Build Status](https://img.shields.io/badge/Build-Unofficial-ff9800?style=flat&logo=android&logoColor=white)](https://xdaforums.com/)
