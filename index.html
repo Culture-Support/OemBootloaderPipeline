@@ -1,0 +1,745 @@
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Android Bootloader & Magisk Flashing Pipeline Simulator</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            cyber: '#38bdf8',
+            magisk: '#10b981',
+            odin: '#0284c7',
+            warn: '#f59e0b',
+            danger: '#f43f5e',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Animated Firmware & Matrix CSS Background + Device Simulation Styles -->
+  <style>
+    :root {
+      --bg-dark: #070c18;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --card-border: rgba(56, 189, 248, 0.2);
+      --term-bg: #030712;
+      --stream-color: rgba(56, 189, 248, 0.12);
+      --magisk-accent: #10b981;
+      --flash-glow: #38bdf8;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Firmware Grid & Pulse Background */
+    .firmware-bg-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      background: 
+        radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.07) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(2, 132, 199, 0.04) 0%, transparent 60%);
+      overflow: hidden;
+    }
+
+    /* Animated Circuit / Partition Data Stream Grid */
+    .firmware-grid {
+      position: absolute;
+      inset: -100%;
+      width: 300%;
+      height: 300%;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      transform: perspective(600px) rotateX(40deg);
+      animation: gridScroll 18s linear infinite;
+    }
+
+    @keyframes gridScroll {
+      0% { transform: perspective(600px) rotateX(40deg) translateY(0); }
+      100% { transform: perspective(600px) rotateX(40deg) translateY(40px); }
+    }
+
+    /* Flowing Packet Rays */
+    .stream-beam {
+      position: absolute;
+      width: 2px;
+      height: 140px;
+      background: linear-gradient(to bottom, transparent, #38bdf8, transparent);
+      animation: beamFall 5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      opacity: 0.6;
+    }
+    .stream-beam.green {
+      background: linear-gradient(to bottom, transparent, #10b981, transparent);
+      animation-duration: 4.2s;
+    }
+    .stream-beam.purple {
+      background: linear-gradient(to bottom, transparent, #c084fc, transparent);
+      animation-duration: 6.5s;
+    }
+
+    @keyframes beamFall {
+      0% { transform: translateY(-150px); opacity: 0; }
+      40% { opacity: 0.8; }
+      100% { transform: translateY(110vh); opacity: 0; }
+    }
+
+    /* Phone Device Mockup & Dynamic Screen */
+    .phone-device {
+      width: 250px;
+      height: 480px;
+      border-radius: 36px;
+      background: #0f172a;
+      border: 4px solid #334155;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.4s ease;
+    }
+
+    .phone-notch {
+      width: 70px;
+      height: 18px;
+      background: #334155;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+      align-self: center;
+      position: absolute;
+      top: 0;
+      z-index: 20;
+    }
+
+    .phone-screen {
+      flex: 1;
+      padding: 24px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      position: relative;
+      background: #030712;
+      overflow: hidden;
+    }
+
+    /* Flash Sweep Effect on Phone Screen */
+    .screen-flash-sweep {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent, rgba(56, 189, 248, 0.35), transparent);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flashing-active .screen-flash-sweep {
+      opacity: 1;
+      animation: flashSweepAnim 1.6s ease-in-out infinite;
+    }
+
+    @keyframes flashSweepAnim {
+      0% { top: -100%; }
+      100% { top: 120%; }
+    }
+
+    /* Terminal & Code Block styling */
+    .terminal-window {
+      background: rgba(3, 7, 18, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 0.85rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.8);
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.22rem 0.75rem;
+      border-radius: 0.3rem;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .code-line:hover {
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .code-line.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-left: 3px solid #38bdf8;
+    }
+
+    .line-number {
+      user-select: none;
+      width: 2.2rem;
+      text-align: right;
+      padding-right: 1rem;
+      color: #4b5563;
+      font-size: 0.8rem;
+    }
+
+    .syntax-comment { color: #6b7280; font-style: italic; }
+    .syntax-keyword { color: #f43f5e; font-weight: 600; }
+    .syntax-func    { color: #38bdf8; font-weight: 500; }
+    .syntax-var     { color: #fbbf24; }
+    .syntax-string  { color: #34d399; }
+    .syntax-cmd     { color: #c084fc; font-weight: 600; }
+    .syntax-magisk  { color: #10b981; font-weight: 600; }
+
+    /* Interactive Tabs */
+    .tab-btn.active {
+      border-bottom: 2px solid #38bdf8;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.05);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+
+  <!-- Background Simulation Rays & Grid -->
+  <div class="firmware-bg-layer">
+    <div class="firmware-grid"></div>
+    <div class="stream-beam" style="left: 12%; animation-delay: 0s;"></div>
+    <div class="stream-beam green" style="left: 28%; animation-delay: 1.8s;"></div>
+    <div class="stream-beam purple" style="left: 55%; animation-delay: 0.6s;"></div>
+    <div class="stream-beam green" style="left: 74%; animation-delay: 2.4s;"></div>
+    <div class="stream-beam" style="left: 89%; animation-delay: 3.1s;"></div>
+  </div>
+
+  <!-- Top Header Navigation -->
+  <header class="border-b border-slate-800/80 bg-slate-900/85 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3.5">
+        <div class="p-2.5 bg-gradient-to-br from-cyan-950 to-slate-900 border border-cyan-500/30 rounded-xl text-cyan-400 shadow-lg shadow-cyan-950/50">
+          <i class="ph-bold ph-cpu text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            Bootloader & Magisk Flash Engine
+            <span class="text-xs font-mono font-medium bg-emerald-950/80 border border-emerald-600/40 text-emerald-300 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sideload Pipeline
+            </span>
+          </h1>
+          <p class="text-xs text-slate-400">Live Fastboot execution, dynamic partition writing, and root injection visualizer</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button id="copyScriptBtn" onclick="copyFullScript()" class="flex items-center gap-2 text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/80 px-3.5 py-2 rounded-lg transition active:scale-95 shadow">
+          <i class="ph-bold ph-copy text-sm"></i>
+          <span>Copy Bash Script</span>
+        </button>
+        <button onclick="startFlashingSim()" id="simBtn" class="flex items-center gap-2 text-xs font-semibold bg-gradient-to-r from-cyan-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white px-3.5 py-2 rounded-lg transition active:scale-95 shadow-lg shadow-cyan-900/40">
+          <i class="ph-bold ph-play-circle text-base"></i>
+          <span>Simulate Flash</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Grid Content -->
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
+
+    <!-- Left Column: Code & Script Tabs (7 Cols) -->
+    <section class="lg:col-span-7 flex flex-col space-y-4">
+
+      <!-- Navigation Tabs -->
+      <div class="flex border-b border-slate-800 text-xs sm:text-sm font-medium text-slate-400 bg-slate-900/40 rounded-t-lg backdrop-blur">
+        <button onclick="switchTab('code')" id="tab-code" class="tab-btn active px-4 py-3 flex items-center gap-2">
+          <i class="ph-bold ph-terminal-window"></i>
+          <span>Interactive Bash Pipeline</span>
+        </button>
+        <button onclick="switchTab('magisk')" id="tab-magisk" class="tab-btn px-4 py-3 flex items-center gap-2">
+          <i class="ph-bold ph-mask-happy text-emerald-400"></i>
+          <span>Magisk Sideload Script</span>
+        </button>
+        <button onclick="switchTab('raw')" id="tab-raw" class="tab-btn px-4 py-3 flex items-center gap-2">
+          <i class="ph-bold ph-file-code"></i>
+          <span>Raw Shell Code</span>
+        </button>
+      </div>
+
+      <!-- Tab View 1: Interactive Code Inspector -->
+      <div id="view-code" class="terminal-window p-4 flex flex-col flex-1">
+        <div class="flex items-center justify-between pb-3 mb-2 border-b border-slate-800/80 text-xs text-slate-400">
+          <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+            <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+            <span class="ml-2 font-mono text-slate-300">flash_magisk_pipeline.sh</span>
+          </div>
+          <span class="text-[11px] text-cyan-400 font-mono bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">
+            Click lines to inspect & sync phone
+          </span>
+        </div>
+
+        <div id="interactiveCode" class="font-mono text-xs overflow-x-auto space-y-0.5 select-text py-1 leading-relaxed max-h-[540px]">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- Tab View 2: Magisk Sideload Specific Script -->
+      <div id="view-magisk" class="terminal-window p-5 hidden flex-col flex-1 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <i class="ph-bold ph-mask-happy text-emerald-400 text-lg"></i>
+            <h3 class="text-sm font-semibold text-white">Magisk Sideload & Boot Patch Sequence</h3>
+          </div>
+          <span class="text-xs font-mono bg-emerald-950/80 text-emerald-300 border border-emerald-700/50 px-2 py-0.5 rounded">
+            Recovery / Fastboot Direct
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-400">
+          The Magisk sideload pipeline automatically adapts depending on whether your device runs Android 12- (standard <code class="text-emerald-400">boot.img</code>) or Android 13+ (separate <code class="text-cyan-400">init_boot.img</code> containing second-stage ramdisk).
+        </p>
+
+        <pre class="font-mono text-xs text-emerald-300 bg-slate-950/90 p-3 rounded-lg border border-slate-800 overflow-x-auto leading-relaxed"><code># Convert Magisk APK into flashable Recovery Zip
+cp Magisk-v28.0.apk Magisk-v28.0.zip
+
+# Reboot to custom recovery (TWRP / Lineage / OrangeFox)
+adb reboot recovery
+
+# Device is placed in Sideload Mode:
+# Recovery UI -> Advanced -> ADB Sideload -> Swipe
+adb wait-for-sideload
+adb sideload Magisk-v28.0.zip
+
+# For non-recovery installations (patching partition directly via fastboot):
+fastboot flash vbmeta --disable-verity --disable-verification vbmeta.img
+fastboot flash init_boot magisk_patched_init_boot.img
+fastboot reboot</code></pre>
+      </div>
+
+      <!-- Tab View 3: Raw Shell Code -->
+      <div id="view-raw" class="terminal-window p-4 hidden flex-col flex-1">
+        <div class="flex justify-between items-center pb-2 mb-2 border-b border-slate-800 text-xs text-slate-400">
+          <span>POSIX Shell Script (Direct Executable)</span>
+          <button onclick="copyFullScript()" class="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-mono">
+            <i class="ph-bold ph-copy"></i> copy code
+          </button>
+        </div>
+        <pre class="font-mono text-xs text-slate-300 overflow-x-auto p-3 bg-slate-950/90 rounded border border-slate-800 leading-relaxed"><code id="rawCodeText"></code></pre>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Interactive Phone Flashing Simulator & Line Inspector (5 Cols) -->
+    <section class="lg:col-span-5 flex flex-col space-y-4">
+
+      <!-- Phone Simulator & Screen Status -->
+      <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 shadow-2xl backdrop-blur flex flex-col items-center">
+        
+        <div class="w-full flex items-center justify-between pb-3 mb-4 border-b border-slate-800 text-xs">
+          <span class="text-slate-300 font-semibold flex items-center gap-1.5">
+            <i class="ph-bold ph-device-mobile text-cyan-400"></i> Hardware Flashing Simulator
+          </span>
+          <span id="deviceModeBadge" class="font-mono px-2 py-0.5 rounded bg-amber-950/60 border border-amber-600/50 text-amber-300 text-[11px]">
+            MODE: FASTBOOT (ABL)
+          </span>
+        </div>
+
+        <!-- The Physical Animated Phone -->
+        <div id="mockPhone" class="phone-device mb-4">
+          <div class="phone-notch"></div>
+          <div class="screen-flash-sweep"></div>
+          
+          <div class="phone-screen" id="phoneDisplay">
+            <!-- Simulated Bootloader Header -->
+            <div class="text-emerald-400 font-bold text-[11px] mb-1 flex items-center justify-between">
+              <span>FASTBOOT MODE</span>
+              <span id="screenBat" class="text-slate-400">88%</span>
+            </div>
+            <div class="text-slate-400 text-[9px] mb-2 leading-tight">
+              DEVICE: Pixel 8 / A23 5G<br>
+              BOOTLOADER: UNLOCKED (ORANGE)<br>
+              ACTIVE SLOT: _a
+            </div>
+
+            <!-- Terminal output inside phone -->
+            <div id="screenLog" class="flex-1 overflow-hidden space-y-1 text-slate-300 text-[9px]">
+              <p class="text-cyan-400">> USB Link Established</p>
+              <p class="text-slate-500">> Awaiting partition packet</p>
+            </div>
+
+            <!-- Flashing Progress Bar on Phone -->
+            <div class="mt-auto pt-2">
+              <div class="flex justify-between text-[9px] text-slate-400 mb-1">
+                <span id="flashProgressLabel">Idle</span>
+                <span id="flashProgressPercent">0%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div id="phoneProgressBar" class="bg-cyan-400 h-full w-0 transition-all duration-300"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone Action Triggers -->
+        <div class="w-full grid grid-cols-3 gap-2 text-xs">
+          <button onclick="setDeviceState('bootloader')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-[11px] text-center transition">
+            Fastboot
+          </button>
+          <button onclick="setDeviceState('recovery')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-[11px] text-center transition">
+            Recovery
+          </button>
+          <button onclick="setDeviceState('sideload')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-[11px] text-center transition">
+            Sideload
+          </button>
+        </div>
+      </div>
+
+      <!-- Line Inspector & Safety Box -->
+      <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 shadow-xl backdrop-blur flex flex-col flex-1">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div class="flex items-center gap-2">
+            <i class="ph-bold ph-code-block text-cyan-400"></i>
+            <h4 class="text-sm font-semibold text-white">Line Command Details</h4>
+          </div>
+          <span id="inspectorLineBadge" class="text-xs font-mono bg-cyan-950 text-cyan-300 border border-cyan-800/50 px-2 py-0.5 rounded">
+            Line 2
+          </span>
+        </div>
+
+        <div id="inspectorBody" class="py-3 space-y-3 text-xs flex-1">
+          <!-- Injected via selectLine() -->
+        </div>
+
+        <div class="pt-3 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <i class="ph-bold ph-shield-check text-emerald-400"></i> Root / AVB Integrity
+          </span>
+          <span class="font-mono text-cyan-400">dm-verity disabled</span>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Interactive Logic & State Controller -->
+  <script>
+    // Complete Bash script with Magisk sideloading & partition verification routines
+    const scriptDataset = [
+      {
+        num: 1,
+        code: "#!/usr/bin/env bash",
+        desc: "Shebang Specification",
+        action: "Resolves bash binary across diverse Unix PATH environments.",
+        phoneState: "bootloader",
+        phoneLog: "Script environment initialized."
+      },
+      {
+        num: 2,
+        code: "set -eo pipefail",
+        desc: "Strict Error Handling Mode",
+        action: "Terminates script immediately if any pipeline segment fails.",
+        phoneState: "bootloader",
+        phoneLog: "Pipeline error traps enabled."
+      },
+      {
+        num: 3,
+        code: 'MAGISK_ZIP="Magisk-v28.0.zip"',
+        desc: "Magisk Sideload Archive",
+        action: "Target root installation zip payload to stream into recovery.",
+        phoneState: "bootloader",
+        phoneLog: "Payload defined: Magisk-v28.0.zip"
+      },
+      {
+        num: 4,
+        code: 'VBMETA_IMG="vbmeta.img"',
+        desc: "AVB Root of Trust",
+        action: "Verified Boot metadata container for disable-verity flags.",
+        phoneState: "bootloader",
+        phoneLog: "Targeting vbmeta partition."
+      },
+      {
+        num: 5,
+        code: 'INIT_BOOT_IMG="init_boot.img"',
+        desc: "Android 13+ RAMDisk",
+        action: "Dedicated partition holding generic ramdisk and first stage init.",
+        phoneState: "bootloader",
+        phoneLog: "Init_boot architecture configured."
+      },
+      {
+        num: 6,
+        code: "wait_for_fastboot() {",
+        desc: "Fastboot Polling Routine",
+        action: "Blocks execution until USB re-enumeration confirms Fastboot mode.",
+        phoneState: "bootloader",
+        phoneLog: "Fastboot polling routine ready."
+      },
+      {
+        num: 7,
+        code: '    while ! fastboot devices | grep -q "fastboot"; do sleep 2; done',
+        desc: "Hardware Handshake Loop",
+        action: "Prevents race conditions by pinging USB endpoint every 2 seconds.",
+        phoneState: "bootloader",
+        phoneLog: "Polling device USB..."
+      },
+      {
+        num: 8,
+        code: "}",
+        desc: "Function Closure",
+        action: "Ends polling helper definition.",
+        phoneState: "bootloader",
+        phoneLog: "Ready."
+      },
+      {
+        num: 9,
+        code: "wait_for_fastboot",
+        desc: "Device Verification",
+        action: "Verifies phone is plugged in and responding in fastboot.",
+        phoneState: "bootloader",
+        phoneLog: "Device connected in FASTBOOT mode."
+      },
+      {
+        num: 10,
+        code: "fastboot flash vbmeta --disable-verity --disable-verification vbmeta.img",
+        desc: "Disable AVB 2.0 Verity",
+        action: "Prevents immediate kernel panic and bootloops on unsigned kernels.",
+        phoneState: "bootloader",
+        phoneLog: "Writing vbmeta (flags: disabled)... OKAY"
+      },
+      {
+        num: 11,
+        code: 'fastboot flash init_boot "$INIT_BOOT_IMG"',
+        desc: "Flash Patched Boot / Init_Boot",
+        action: "Writes Magisk root-patched ramdisk directly to storage.",
+        phoneState: "bootloader",
+        phoneLog: "Sending init_boot [64MB]... Writing init_boot... OKAY"
+      },
+      {
+        num: 12,
+        code: "fastboot reboot recovery",
+        desc: "Reboot to Custom Recovery",
+        action: "Restarts phone out of fastboot directly into TWRP or OrangeFox.",
+        phoneState: "recovery",
+        phoneLog: "Rebooting into Recovery kernel..."
+      },
+      {
+        num: 13,
+        code: "adb wait-for-sideload",
+        desc: "Await Sideload Handshake",
+        action: "Pauses until user or recovery activates ADB sideload engine.",
+        phoneState: "sideload",
+        phoneLog: "Sideload engine started. Awaiting packet..."
+      },
+      {
+        num: 14,
+        code: 'adb sideload "$MAGISK_ZIP"',
+        desc: "Stream & Install Magisk",
+        action: "Streams Magisk zip directly to recovery installer, patching ramdisk live.",
+        phoneState: "sideload",
+        phoneLog: "Flashing Magisk-v28.0.zip: 100% OKAY"
+      },
+      {
+        num: 15,
+        code: "adb reboot",
+        desc: "Boot System OS",
+        action: "Restarts device into rooted Android operating system.",
+        phoneState: "os",
+        phoneLog: "Rebooting system... Root active."
+      }
+    ];
+
+    // Populate Raw Code Tab
+    const rawCode = scriptDataset.map(item => item.code).join("\n");
+    document.getElementById("rawCodeText").textContent = rawCode;
+
+    // Render interactive code items
+    const codeContainer = document.getElementById("interactiveCode");
+    scriptDataset.forEach((item, index) => {
+      const line = document.createElement("div");
+      line.className = `code-line ${index === 1 ? 'active' : ''}`;
+      line.id = `line-${item.num}`;
+      line.onclick = () => selectLine(item.num);
+
+      const num = document.createElement("span");
+      num.className = "line-number";
+      num.textContent = item.num;
+
+      const text = document.createElement("span");
+      text.className = "flex-1 whitespace-pre";
+      text.innerHTML = highlightSyntax(item.code);
+
+      line.appendChild(num);
+      line.appendChild(text);
+      codeContainer.appendChild(line);
+    });
+
+    // Syntax colorizer
+    function highlightSyntax(code) {
+      if (!code) return "&nbsp;";
+      if (code.startsWith("#")) {
+        return `<span class="syntax-comment">${escapeHtml(code)}</span>`;
+      }
+      return code
+        .replace(/\b(local|if|then|else|fi|while|do|done|set)\b/g, '<span class="syntax-keyword">$1</span>')
+        .replace(/\b(fastboot|adb|grep|sleep|echo|read|exit)\b/g, '<span class="syntax-cmd">$1</span>')
+        .replace(/\b(Magisk-[^\s"]+)\b/g, '<span class="syntax-magisk">$1</span>')
+        .replace(/(\"[^\"]*\")/g, '<span class="syntax-string">$1</span>')
+        .replace(/(\$[A-Za-z0-9_]+)/g, '<span class="syntax-var">$1</span>')
+        .replace(/\b([A-Za-z0-9_]+)\(\)/g, '<span class="syntax-func">$1()</span>');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Line selection and phone screen sync
+    function selectLine(num) {
+      document.querySelectorAll(".code-line").forEach(el => el.classList.remove("active"));
+      const selected = document.getElementById(`line-${num}`);
+      if (selected) selected.classList.add("active");
+
+      const item = scriptDataset.find(d => d.num === num);
+      if (!item) return;
+
+      document.getElementById("inspectorLineBadge").textContent = `Line ${item.num}`;
+      
+      const body = document.getElementById("inspectorBody");
+      body.innerHTML = `
+        <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 font-mono text-xs">
+          <span class="text-slate-500 text-[10px] block uppercase mb-1">Command Snippet:</span>
+          <span class="text-cyan-300 font-medium">${escapeHtml(item.code)}</span>
+        </div>
+        <div>
+          <h5 class="text-slate-300 font-semibold mb-1 text-xs">${item.desc}</h5>
+          <p class="text-slate-400 text-xs leading-relaxed">${item.action}</p>
+        </div>
+      `;
+
+      // Update phone state according to selected command
+      setDeviceState(item.phoneState, item.phoneLog);
+    }
+
+    // Change simulated device states & screen animations
+    function setDeviceState(state, message) {
+      const phone = document.getElementById("mockPhone");
+      const badge = document.getElementById("deviceModeBadge");
+      const log = document.getElementById("screenLog");
+      const progressBar = document.getElementById("phoneProgressBar");
+      const progressLabel = document.getElementById("flashProgressLabel");
+      const progressPercent = document.getElementById("flashProgressPercent");
+
+      phone.classList.remove("flashing-active");
+
+      if (state === 'bootloader') {
+        badge.textContent = "MODE: FASTBOOT (ABL)";
+        badge.className = "font-mono px-2 py-0.5 rounded bg-amber-950/60 border border-amber-600/50 text-amber-300 text-[11px]";
+        progressBar.style.width = "40%";
+        progressLabel.textContent = "Fastboot Link";
+        progressPercent.textContent = "OK";
+        phone.classList.add("flashing-active");
+      } else if (state === 'recovery') {
+        badge.textContent = "MODE: RECOVERY (TWRP)";
+        badge.className = "font-mono px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-600/50 text-cyan-300 text-[11px]";
+        progressBar.style.width = "65%";
+        progressLabel.textContent = "Recovery Ready";
+        progressPercent.textContent = "65%";
+      } else if (state === 'sideload') {
+        badge.textContent = "MODE: ADB SIDELOAD";
+        badge.className = "font-mono px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-600/50 text-emerald-300 text-[11px]";
+        progressBar.style.width = "90%";
+        progressLabel.textContent = "Magisk Streaming";
+        progressPercent.textContent = "90%";
+        phone.classList.add("flashing-active");
+      } else if (state === 'os') {
+        badge.textContent = "MODE: SYSTEM (ROOTED)";
+        badge.className = "font-mono px-2 py-0.5 rounded bg-purple-950/60 border border-purple-600/50 text-purple-300 text-[11px]";
+        progressBar.style.width = "100%";
+        progressLabel.textContent = "Active";
+        progressPercent.textContent = "100%";
+      }
+
+      if (message) {
+        log.innerHTML += `<p class="text-cyan-300 leading-tight">> ${message}</p>`;
+        log.scrollTop = log.scrollHeight;
+      }
+    }
+
+    // Interactive Full Simulation
+    async function startFlashingSim() {
+      const simBtn = document.getElementById("simBtn");
+      simBtn.disabled = true;
+      simBtn.innerHTML = `<i class="ph-bold ph-spinner animate-spin"></i> Flashing...`;
+
+      const steps = [1, 9, 10, 11, 12, 13, 14, 15];
+      for (const stepNum of steps) {
+        selectLine(stepNum);
+        document.getElementById(`line-${stepNum}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        await new Promise(r => setTimeout(r, 1200));
+      }
+
+      simBtn.disabled = false;
+      simBtn.innerHTML = `<i class="ph-bold ph-check-circle text-emerald-300"></i> Done!`;
+      setTimeout(() => {
+        simBtn.innerHTML = `<i class="ph-bold ph-play-circle text-base"></i> Simulate Flash`;
+      }, 3000);
+    }
+
+    // Tab Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById(`tab-${tabId}`).classList.add("active");
+
+      document.getElementById("view-code").classList.add("hidden");
+      document.getElementById("view-magisk").classList.add("hidden");
+      document.getElementById("view-raw").classList.add("hidden");
+
+      if (tabId === 'code') document.getElementById("view-code").classList.remove("hidden");
+      if (tabId === 'magisk') document.getElementById("view-magisk").classList.remove("hidden");
+      if (tabId === 'raw') document.getElementById("view-raw").classList.remove("hidden");
+    }
+
+    // Copy Utility
+    function copyFullScript() {
+      const el = document.createElement('textarea');
+      el.value = rawCode;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      const btn = document.getElementById("copyScriptBtn");
+      const prev = btn.innerHTML;
+      btn.innerHTML = `<i class="ph-bold ph-check text-emerald-400"></i> <span class="text-emerald-400">Copied!</span>`;
+      setTimeout(() => { btn.innerHTML = prev; }, 2000);
+    }
+
+    // Initialize with Line 2 active
+    selectLine(2);
+  </script>
+</body>
+</html>
