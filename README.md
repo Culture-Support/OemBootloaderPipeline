@@ -46,3 +46,12 @@ new Custom Roms
 -----
 
 #Servers will reflash
+
+
+
+-------------
+
+We trasncripts our Self on Mirc channel 
+
+- turning devices back to super hosts the way it should
+- not need new Phone hysteria 
